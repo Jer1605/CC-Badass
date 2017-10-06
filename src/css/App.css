@@ -1,0 +1,34 @@
+@import "knacss.css";
+@import "anims.css";
+
+/* GENERAL STYLES */
+section, article, header, nav, div, p{box-sizing: border-box}
+.App {text-align: center}
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px
+}
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white
+}
+.App-intro {font-size: large}
+img {max-width: 100%}
+.App-content {
+    width: 100%;
+    padding: 0 1rem;
+}
+.App-section {padding: 1rem 0}
+
+/* ARENA SPECIFICS STYLES */
+.App-characters .App-character:nth-child(odd) {padding-right: 0.5rem}
+.App-characters .App-character:nth-child(even) {padding-left: 0.5rem}
+.App-character img {border-radius: 1rem;box-shadow: 0 0 6px 1px rgba(0, 0, 0, 0.2);opacity: 0.4}
+.App-character img.active,
+.App-character img:hover {
+    opacity: 1;
+    border: 1px solid white;
+    box-sizing: border-box
+}

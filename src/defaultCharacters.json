@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Bruce Willis",
+    "description": "YEPEE-KI-YAAAAAAY",
+    "image": "character_bruce-willis.jpg",
+    "startFight": false,
+    "stats": {
+      "strength": 50,
+      "skills": 60,
+      "agility": 20,
+      "health": 80,
+      "luck": 20,
+      "armour": 400
+    },
+    "xp": {
+      "lvl": 1,
+      "progress": 0
+    }
+  },
+  {
+    "name": "Chuck Norris",
+    "description": "Je met mes pieds ou je veux, et c'est souvent dans la gueule",
+    "image": "character_chuck-norris.jpg",
+    "startFight": false,
+    "stats": {
+      "strength": 70,
+      "skills": 70,
+      "agility": 40,
+      "health": 50,
+      "luck": 10,
+      "armour": 100
+    },
+    "xp": {
+      "lvl": 1,
+      "progress": 0
+    }
+  }
+]

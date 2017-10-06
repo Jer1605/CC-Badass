@@ -79,11 +79,11 @@ class App extends Component {
     console.log('Dégats : ' + this.getDamages(firstFighter, secndFighter))
 
     // initiate who is giving the first hit
-    randomDice(0, 1) = 0 ? firstFighter.startFight = true : secndFighter.startFight = true
+    //randomDice(0, 1) = 0 ? firstFighter.startFight = true : secndFighter.startFight = true
 
     // initiate firstplayer
     while(firstFighter.stats.health > 0 || secndFighter.stats.healthh > 0){
-      health--;
+      firstFighter.stats.health--;
     }
   }
 

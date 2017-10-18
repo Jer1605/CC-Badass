@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Route,   } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom';
 import { createFDBIfNecessary, getAllCharactersFromFDB, removeClass, randomDice } from './Services';
 import Header from './Header';
+import Result from './Result';
 import './css/App.css';
 
 
@@ -14,7 +15,8 @@ class App extends Component {
       readyToFight: false, // Perso selectionnés ou non
       firstPlayerCharacter: null,
       secndPlayerCharacter: null,
-      whoseRound: 0
+      resume: 'RESUME WILL BE HERE',
+      fightEnd: false,
     }
   }
 
@@ -103,9 +105,13 @@ class App extends Component {
 
     if(hit) defender.stats.health -= damages
 
-    console.log(defender.name + ' : ' + defender.stats.health)
+    //console.log(defender.name + ' : ' + defender.stats.health)
 
-    if(0 >= defender.stats.health) console.log(attacker.name + ' A GAGNE !!!!!')
+    if(0 >= defender.stats.health)
+    {
+      console.log(attacker.name + ' A GAGNE !!!!!')
+      this.setState({fightEnd: true}, () => {console.log('TEST: ' + this.state.fightEnd)})
+    }
 
     //on passe la main à l'autre fighter
     return 1 === whoseRound ? 2 : 1
@@ -126,6 +132,13 @@ class App extends Component {
         )
       })
     return(characterToDisplay)
+  }
+
+  displayFightResult = () => {
+    if(this.state.fightEnd){
+      console.log('AAA')
+      return <Redirect push to="/result" />
+    }
   }
 
   componentDidMount = () => {
@@ -154,6 +167,13 @@ class App extends Component {
               </section>
             )
           }></Route>
+          <Route exact path="/result" render = {() => (
+            <Result
+              resume = {this.state.resume}
+            />
+          )}>
+          </Route>
+          {this.displayFightResult()}
         </div>
       </Router>
     )

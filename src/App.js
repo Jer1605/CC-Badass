@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
-import { createFDBIfNecessary, getAllCharactersFromFDB, isElementPresent, removeClass, randomDice } from './Services';
+import { BrowserRouter as Router, Route,   } from 'react-router-dom';
+import { createFDBIfNecessary, getAllCharactersFromFDB, removeClass, randomDice } from './Services';
 import Header from './Header';
-import logo from './logo.svg';
 import './css/App.css';
 
 
@@ -15,6 +14,7 @@ class App extends Component {
       readyToFight: false, // Perso selectionnés ou non
       firstPlayerCharacter: null,
       secndPlayerCharacter: null,
+      whoseRound: 0
     }
   }
 
@@ -64,27 +64,14 @@ class App extends Component {
   }
 
   // Retourne les dégats pour le tour
-  getDamages = (attacker, defender) => {
+  getDamages = (attacker, defender, cc = false) => {
     let defenderArmour = defender.stats.armour
     let attackerStrength = attacker.stats.strength
+
+    if(cc) attackerStrength *= 2
     let damages = Math.ceil(attackerStrength / 10) - Math.ceil(defenderArmour / 100)
 
     return damages;
-  }
-
-  //Démarre le combat
-  initiateFight = (firstFighter, secndFighter) => {
-    console.log('Chances de toucher : ' + this.getHitChances(firstFighter, secndFighter))
-    console.log('Chances de CC : ' + this.getCriticalChances(firstFighter, secndFighter))
-    console.log('Dégats : ' + this.getDamages(firstFighter, secndFighter))
-
-    // initiate who is giving the first hit
-    //randomDice(0, 1) = 0 ? firstFighter.startFight = true : secndFighter.startFight = true
-
-    // initiate firstplayer
-    while(firstFighter.stats.health > 0 || secndFighter.stats.healthh > 0){
-      firstFighter.stats.health--;
-    }
   }
 
   //Démarre le combat
@@ -92,7 +79,36 @@ class App extends Component {
     let firstFighter = this.state.characters[this.state.firstPlayerCharacter]
     let secndFighter = this.state.characters[this.state.secndPlayerCharacter]
 
-    this.initiateFight(firstFighter, secndFighter);
+    this.initiateFight(firstFighter, secndFighter)
+  }
+
+  //Initialise le combat
+  initiateFight = (firstFighter, secndFighter) => {
+    let whoseRound =  randomDice(1, 2)
+
+    while(firstFighter.stats.health > 0 && secndFighter.stats.health > 0){
+      1 === whoseRound ? whoseRound = this.runRound(firstFighter, secndFighter, whoseRound) : whoseRound = this.runRound(secndFighter, firstFighter, whoseRound)
+    }
+  }
+
+  // Lance les actions définies pour un round
+  runRound = (attacker, defender, whoseRound) => {
+    let hit = false
+    let cc = false
+    let damages
+
+    hit = randomDice(0, 100) <= this.getHitChances(attacker, defender)
+    cc = randomDice(0, 100) <= this.getCriticalChances(attacker, defender)
+    damages = this.getDamages(attacker, defender, cc)
+
+    if(hit) defender.stats.health -= damages
+
+    console.log(defender.name + ' : ' + defender.stats.health)
+
+    if(0 >= defender.stats.health) console.log(attacker.name + ' A GAGNE !!!!!')
+
+    //on passe la main à l'autre fighter
+    return 1 === whoseRound ? 2 : 1
   }
 
   //Affiche la liste de tous les persos dans l'Arene

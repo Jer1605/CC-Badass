@@ -15,7 +15,7 @@ class App extends Component {
       readyToFight: false, // Perso selectionnés ou non
       firstPlayerCharacter: null,
       secndPlayerCharacter: null,
-      resume: 'RESUME WILL BE HERE',
+      resume: [],
       fightEnd: false,
     }
   }
@@ -86,35 +86,62 @@ class App extends Component {
 
   //Initialise le combat
   initiateFight = (firstFighter, secndFighter) => {
-    let whoseRound =  randomDice(1, 2)
+    let tempFight
+    let fight = {
+      resume: ['3...2...1...FIGHT !'],
+      whoseRound: randomDice(1, 2)
+    }
 
     while(firstFighter.stats.health > 0 && secndFighter.stats.health > 0){
-      1 === whoseRound ? whoseRound = this.runRound(firstFighter, secndFighter, whoseRound) : whoseRound = this.runRound(secndFighter, firstFighter, whoseRound)
+
+      tempFight = 1 === fight.whoseRound ? this.runRound(firstFighter, secndFighter, fight.whoseRound, fight.resume) : this.runRound(secndFighter, firstFighter, fight.whoseRound, fight.resume)
+
+      fight.whoseRound = tempFight.whoseRound
+      fight.resume = tempFight.resume
+
     }
   }
 
   // Lance les actions définies pour un round
-  runRound = (attacker, defender, whoseRound) => {
+  runRound = (attacker, defender, whoseRound, resume) => {
+    let fight = {resume: resume}
     let hit = false
     let cc = false
     let damages
 
+
     hit = randomDice(0, 100) <= this.getHitChances(attacker, defender)
     cc = randomDice(0, 100) <= this.getCriticalChances(attacker, defender)
     damages = this.getDamages(attacker, defender, cc)
+    if(hit)
+    {
+      defender.stats.health -= damages
+      if(cc)
+        fight.resume.push('OOOOOOH MY FUCKING GOD !!!!!' + attacker.name + ' déséquilibre ' + defender.name + ' et le maltraite en lui infligeant ' + damages + ' points de dégâts... HU-MI-LIA-TION !')
+      else
+        fight.resume.push(attacker.name + ' attaque ' + defender.name + ' avec rage et lui inflige ' + damages + ' points de dégâts')
+    }
+    else
+    {
+      fight.resume.push(attacker.name + ' attaque ' + defender.name + ' de toutes ses forces, mais celui-ci esquive à la vitesse de l\'éclair')
+    }
 
-    if(hit) defender.stats.health -= damages
+    fight.whoseRound = 1 === whoseRound ? 2 : 1
 
     //console.log(defender.name + ' : ' + defender.stats.health)
-
     if(0 >= defender.stats.health)
     {
       console.log(attacker.name + ' A GAGNE !!!!!')
-      this.setState({fightEnd: true}, () => {console.log('TEST: ' + this.state.fightEnd)})
+      this.setState({
+        resume: fight.resume,
+        fightEnd: true
+      })
     }
 
+    console.log(fight);
+
     //on passe la main à l'autre fighter
-    return 1 === whoseRound ? 2 : 1
+    return fight
   }
 
   //Affiche la liste de tous les persos dans l'Arene

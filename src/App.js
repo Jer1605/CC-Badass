@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom';
-import { createFDBIfNecessary, getAllCharactersFromFDB, removeClass, randomDice } from './Services';
+import { createFDBIfNecessary, getAllCharactersFromFDB, removeClass, randomDice, saveAllCharacters } from './Services';
 import Header from './Header';
 import Result from './Result';
 import './css/App.css';
@@ -12,11 +12,11 @@ class App extends Component {
     super(props);
     this.state = {
       characters: [],
+      fight: {},
       readyToFight: false, // Perso selectionnés ou non
+      fightEnd: false,
       firstPlayerCharacter: null,
       secndPlayerCharacter: null,
-      resume: [],
-      fightEnd: false,
     }
   }
 
@@ -26,7 +26,6 @@ class App extends Component {
       this.setState({characters: getAllCharactersFromFDB()})
     } catch(e) {
       console.log(e)
-      this.setState({characters: getAllCharactersFromFDB()})
     }
   }
 
@@ -76,6 +75,14 @@ class App extends Component {
     return damages;
   }
 
+  getXP = (attacker, defender) => {
+    let xpBonus = defender.xp.lvl - attacker.xp.lvl
+    xpBonus = 0 <= xpBonus ? xpBonus : 0
+    xpBonus += 30 + 30 * (xpBonus / 10)
+
+    return xpBonus
+  }
+
   //Démarre le combat
   setFight = () => {
     let firstFighter = this.state.characters[this.state.firstPlayerCharacter]
@@ -88,59 +95,78 @@ class App extends Component {
   initiateFight = (firstFighter, secndFighter) => {
     let tempFight
     let fight = {
-      resume: ['3...2...1...FIGHT !'],
+      resume: [],
       whoseRound: randomDice(1, 2)
     }
 
     while(firstFighter.stats.health > 0 && secndFighter.stats.health > 0){
-
-      tempFight = 1 === fight.whoseRound ? this.runRound(firstFighter, secndFighter, fight.whoseRound, fight.resume) : this.runRound(secndFighter, firstFighter, fight.whoseRound, fight.resume)
-
-      fight.whoseRound = tempFight.whoseRound
-      fight.resume = tempFight.resume
-
+      tempFight = 1 === fight.whoseRound ? this.runRound(firstFighter, secndFighter, fight) : this.runRound(secndFighter, firstFighter, fight)
     }
   }
 
   // Lance les actions définies pour un round
-  runRound = (attacker, defender, whoseRound, resume) => {
-    let fight = {resume: resume}
+  runRound = (attacker, defender, fight) => {
     let hit = false
     let cc = false
+    let defendIsDead
     let damages
-
 
     hit = randomDice(0, 100) <= this.getHitChances(attacker, defender)
     cc = randomDice(0, 100) <= this.getCriticalChances(attacker, defender)
     damages = this.getDamages(attacker, defender, cc)
+
     if(hit)
     {
+      // La vie du défenseur baisse
       defender.stats.health -= damages
-      if(cc)
-        fight.resume.push('OOOOOOH MY FUCKING GOD !!!!!' + attacker.name + ' déséquilibre ' + defender.name + ' et le maltraite en lui infligeant ' + damages + ' points de dégâts... HU-MI-LIA-TION !')
-      else
-        fight.resume.push(attacker.name + ' attaque ' + defender.name + ' avec rage et lui inflige ' + damages + ' points de dégâts')
+
+      // On définit les commentaires du combat
+      if(0 < defender.stats.health)
+      {
+        if(cc)
+          fight.resume.push('OOOOOOH MY FUCKING GOD !!!!!' + attacker.name + ' déséquilibre ' + defender.name + ' et le maltraite en lui infligeant ' + damages + ' points de dégâts... HU-MI-LIA-TION !')
+        else
+          fight.resume.push(attacker.name + ' attaque ' + defender.name + ' avec rage et lui inflige ' + damages + ' points de dégâts')
+      }
     }
     else
     {
       fight.resume.push(attacker.name + ' attaque ' + defender.name + ' de toutes ses forces, mais celui-ci esquive à la vitesse de l\'éclair')
     }
 
-    fight.whoseRound = 1 === whoseRound ? 2 : 1
-
     //console.log(defender.name + ' : ' + defender.stats.health)
-    if(0 >= defender.stats.health)
+    if( 0 >= defender.stats.health)
     {
-      console.log(attacker.name + ' A GAGNE !!!!!')
+      let tempLvl = attacker.xp.lvl
+      let characters = this.state.characters
+
+      fight.resume.push('Veuillez agréer l\'expression de mes plus sincères condoléences...' + defender.name + ' nous a quitté, c\'était un chic type.')
+      fight.resume.push(attacker.name + ' a survécu !')
+
+      // On met à jour les stats des joueurs
+      attacker.xp.progress += this.getXP(attacker, defender)
+      attacker.xp.lvl = Math.ceil(attacker.xp.progress / 100)
+      attacker.lvlToUpdate = tempLvl !== attacker.xp.lvl ? attacker.xp.lvl - tempLvl : 0
+
+      // Ici, on va préenregistrer les nouvelles characteristiques des characters => A FAIRE
+      //characters[this.state.firstPlayerCharacter] = attacker
+
+      // On sauvegare l'xp gagnée en FDB
+      saveAllCharacters(characters)
+
+      fight.firstPlayerCharacter = this.state.firstPlayerCharacter
+      fight.secndPlayerCharacter = this.state.secndPlayerCharacter
+
       this.setState({
-        resume: fight.resume,
+        characters : characters,
+        fight: fight,
         fightEnd: true
       })
     }
 
-    console.log(fight);
+    // On définit qui donnera le prochain coup
+    fight.whoseRound = 1 === fight.whoseRound ? 2 : 1
 
-    //on passe la main à l'autre fighter
     return fight
   }
 
@@ -163,7 +189,6 @@ class App extends Component {
 
   displayFightResult = () => {
     if(this.state.fightEnd){
-      console.log('AAA')
       return <Redirect push to="/result" />
     }
   }
@@ -196,7 +221,8 @@ class App extends Component {
           }></Route>
           <Route exact path="/result" render = {() => (
             <Result
-              resume = {this.state.resume}
+              fight = {this.state.fight}
+              characters = {this.state.characters}
             />
           )}>
           </Route>

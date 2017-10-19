@@ -14,6 +14,7 @@
     },
     "xp": {
       "lvl": 1,
+      "lvlToUpdate": 0,
       "progress": 0
     }
   },
@@ -32,6 +33,7 @@
     },
     "xp": {
       "lvl": 1,
+      "lvlToUpdate": 0,
       "progress": 0
     }
   }

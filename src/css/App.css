@@ -32,3 +32,7 @@ img {max-width: 100%}
     border: 1px solid white;
     box-sizing: border-box
 }
+.App-resume {
+    font-size: 0.85rem;
+    text-align: left;
+}

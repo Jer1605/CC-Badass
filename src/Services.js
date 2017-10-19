@@ -17,6 +17,11 @@ export function getAllCharactersFromFDB() {
   return JSON.parse(localStorage.getItem('charactersFDB'));
 }
 
+//Sauvegarde tous les characters dans la FDB
+export function saveAllCharacters(characters) {
+  console.log(characters)
+}
+
 // Retourne true si l'élément est présent
 export function isElementPresent(selector) {
   return document.querySelectorAll(selector).length > 0

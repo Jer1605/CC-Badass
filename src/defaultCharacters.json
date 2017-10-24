@@ -1,5 +1,6 @@
 [
   {
+    "id":0,
     "name": "Bruce Willis",
     "description": "YEPEE-KI-YAAAAAAY",
     "image": "character_bruce-willis.jpg",
@@ -14,11 +15,12 @@
     },
     "xp": {
       "lvl": 1,
-      "lvlToUpdate": 0,
+      "updatedLvl": 0,
       "progress": 0
     }
   },
   {
+    "id": 1,
     "name": "Chuck Norris",
     "description": "Je met mes pieds ou je veux, et c'est souvent dans la gueule",
     "image": "character_chuck-norris.jpg",
@@ -33,7 +35,7 @@
     },
     "xp": {
       "lvl": 1,
-      "lvlToUpdate": 0,
+      "updatedLvl": 0,
       "progress": 0
     }
   }

@@ -1,6 +1,23 @@
 const defaultCharacters = require('./defaultCharacters.json'); //import des persos par défaut
 const existCharacterFDB = localStorage.getItem('charactersFDB') !== null; // Check si la DB des persos à déjà été créée
 
+function isObjectsEquals(a, b) {
+  let flag = true;
+  for (var prop in a)
+  {
+    if (a[prop] !== b[prop])
+    {
+      flag = false;
+      break;
+    }
+  }
+  return flag;
+}
+
+function updateFDB(newFDB) {
+  typeof newFDB !== 'undefined' ? localStorage.setItem('charactersFDB', JSON.stringify(newFDB)) : null
+}
+
 // Crée une database fictive en localStorage contenant les persos par défaut
 export function createFDBIfNecessary() {
   if(!existCharacterFDB)
@@ -19,7 +36,15 @@ export function getAllCharactersFromFDB() {
 
 //Sauvegarde tous les characters dans la FDB
 export function saveAllCharacters(characters) {
-  console.log(characters)
+  let FDBObject = getAllCharactersFromFDB();
+
+  for(let i = 0; i < characters.length; i++)
+  {
+    characters[i].stats.health !== FDBObject[i].stats.health ? characters[i].stats.health = FDBObject[i].stats.health : null;
+    !isObjectsEquals(characters[i], FDBObject[i]) ? FDBObject[i] = characters[i] : null;
+  }
+
+  updateFDB(FDBObject);
 }
 
 // Retourne true si l'élément est présent

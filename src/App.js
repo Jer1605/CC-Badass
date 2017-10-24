@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom';
-import { createFDBIfNecessary, getAllCharactersFromFDB, removeClass, randomDice, saveAllCharacters } from './Services';
+import { createFDBIfNecessary, getAllCharactersFromFDB, removeClass, randomDice } from './Services';
 import Header from './Header';
 import Result from './Result';
 import './css/App.css';
@@ -39,13 +39,13 @@ class App extends Component {
   }
 
   // Ajoute la classe active au perso et passe le state readyToFight a true, ce qui activera le bouton VS
-  selectCharacter = (event, index, playerId) => {
+  selectCharacter = (event, id, playerId) => {
     event.preventDefault()
 
     removeClass('div[data-player="' + playerId + '"] .App-character img.active', 'active')
     event.target.className += ' active'
 
-    playerId === 0 ? this.setState({firstPlayerCharacter: index}, () => this.checkFightReady()) : this.setState({secndPlayerCharacter: index}, () => this.checkFightReady())
+    playerId === 0 ? this.setState({firstPlayerCharacter: id}, () => this.checkFightReady()) : this.setState({secndPlayerCharacter: id}, () => this.checkFightReady())
   }
 
   // Retourne la chance de toucher l'adversaire
@@ -137,7 +137,6 @@ class App extends Component {
     //console.log(defender.name + ' : ' + defender.stats.health)
     if( 0 >= defender.stats.health)
     {
-      let tempLvl = attacker.xp.lvl
       let characters = this.state.characters
 
       fight.resume.push('Veuillez agréer l\'expression de mes plus sincères condoléences...' + defender.name + ' nous a quitté, c\'était un chic type.')
@@ -146,13 +145,10 @@ class App extends Component {
       // On met à jour les stats des joueurs
       attacker.xp.progress += this.getXP(attacker, defender)
       attacker.xp.lvl = Math.ceil(attacker.xp.progress / 100)
-      attacker.lvlToUpdate = tempLvl !== attacker.xp.lvl ? attacker.xp.lvl - tempLvl : 0
 
-      // Ici, on va préenregistrer les nouvelles characteristiques des characters => A FAIRE
-      //characters[this.state.firstPlayerCharacter] = attacker
-
-      // On sauvegare l'xp gagnée en FDB
-      saveAllCharacters(characters)
+      //On réinitialise la santé
+      //attacker.stats.health = originalHealth[fight.whoseRound]
+      //defender.stats.health = originalHealth[fight.whoseRound === 1 ? 2 : 1]
 
       fight.firstPlayerCharacter = this.state.firstPlayerCharacter
       fight.secndPlayerCharacter = this.state.secndPlayerCharacter
@@ -175,11 +171,11 @@ class App extends Component {
     let characterToDisplay = this.state.characters.map(
       (obj, index) => {
         return(
-          <div key={index} className="App-character">
+          <div key={index} id={obj.id} className="App-character">
             <img
               src={process.env.PUBLIC_URL + obj.image}
               alt="thumb"
-              onClick={(e) => this.selectCharacter(e, index, playerId)}
+              onClick={(e) => this.selectCharacter(e, obj.id, playerId)}
             />
           </div>
         )

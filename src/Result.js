@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { saveAllCharacters } from './Services';
 
 class Result extends Component{
 
@@ -28,6 +29,11 @@ class Result extends Component{
     {
       console.log('erreur : '+ e)
     }
+  }
+
+  componentDidMount = () => {
+    // On sauvegare l'xp gagnée en FDB
+    saveAllCharacters(this.props.characters)
   }
 
   render(){

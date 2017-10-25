@@ -15,8 +15,8 @@ class App extends Component {
       fight: {},
       readyToFight: false, // Perso selectionnés ou non
       fightEnd: false,
-      firstPlayerCharacter: null,
-      secndPlayerCharacter: null,
+      firstPlayerCharacterId: null,
+      secndPlayerCharacterId: null,
     }
   }
 
@@ -31,8 +31,8 @@ class App extends Component {
 
   // check si un perso a été sélectionné pour chauque player
   checkFightReady = () => {
-    if(this.state.firstPlayerCharacter !== null
-    && this.state.secndPlayerCharacter !== null)
+    if(this.state.firstPlayerCharacterId !== null
+    && this.state.secndPlayerCharacterId !== null)
     {
       this.setState({readyToFight: true})
     }
@@ -45,7 +45,7 @@ class App extends Component {
     removeClass('div[data-player="' + playerId + '"] .App-character img.active', 'active')
     event.target.className += ' active'
 
-    playerId === 0 ? this.setState({firstPlayerCharacter: id}, () => this.checkFightReady()) : this.setState({secndPlayerCharacter: id}, () => this.checkFightReady())
+    playerId === 0 ? this.setState({firstPlayerCharacterId: id}, () => this.checkFightReady()) : this.setState({secndPlayerCharacterId: id}, () => this.checkFightReady())
   }
 
   // Retourne la chance de toucher l'adversaire
@@ -75,6 +75,7 @@ class App extends Component {
     return damages;
   }
 
+  // Retourne l'XP gagnée lors d'un combat
   getXP = (attacker, defender) => {
     let xpBonus = defender.xp.lvl - attacker.xp.lvl
     xpBonus = 0 <= xpBonus ? xpBonus : 0
@@ -85,8 +86,8 @@ class App extends Component {
 
   //Démarre le combat
   setFight = () => {
-    let firstFighter = this.state.characters[this.state.firstPlayerCharacter]
-    let secndFighter = this.state.characters[this.state.secndPlayerCharacter]
+    let firstFighter = this.state.characters[this.state.firstPlayerCharacterId]
+    let secndFighter = this.state.characters[this.state.secndPlayerCharacterId]
 
     this.initiateFight(firstFighter, secndFighter)
   }
@@ -115,6 +116,7 @@ class App extends Component {
     cc = randomDice(0, 100) <= this.getCriticalChances(attacker, defender)
     damages = this.getDamages(attacker, defender, cc)
 
+    // Si l'attaquant touche le défenseur
     if(hit)
     {
       // La vie du défenseur baisse
@@ -134,7 +136,7 @@ class App extends Component {
       fight.resume.push(attacker.name + ' attaque ' + defender.name + ' de toutes ses forces, mais celui-ci esquive à la vitesse de l\'éclair')
     }
 
-    //console.log(defender.name + ' : ' + defender.stats.health)
+    // Si le défenseur est malheureusement décédé...
     if( 0 >= defender.stats.health)
     {
       let characters = this.state.characters
@@ -144,14 +146,9 @@ class App extends Component {
 
       // On met à jour les stats des joueurs
       attacker.xp.progress += this.getXP(attacker, defender)
-      attacker.xp.lvl = Math.ceil(attacker.xp.progress / 100)
-
-      //On réinitialise la santé
-      //attacker.stats.health = originalHealth[fight.whoseRound]
-      //defender.stats.health = originalHealth[fight.whoseRound === 1 ? 2 : 1]
-
-      fight.firstPlayerCharacter = this.state.firstPlayerCharacter
-      fight.secndPlayerCharacter = this.state.secndPlayerCharacter
+    
+      fight.winnerId = attacker.id
+      fight.looserId = defender.id
 
       this.setState({
         characters : characters,
@@ -219,6 +216,8 @@ class App extends Component {
             <Result
               fight = {this.state.fight}
               characters = {this.state.characters}
+              firstPlayerCharacterId = {this.state.firstPlayerCharacterId}
+              secndPlayerCharacterId = {this.state.secndPlayerCharacterId}
             />
           )}>
           </Route>
